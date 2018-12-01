@@ -14,9 +14,9 @@ For now, the only way to install is to build from source. Before installing, mak
 
     undbg <target program>
 
-Currently, the only implemented command is `step` (aliased to `s`).
+Currently, the only commands implemented are command `step` and `rev-step` (aliased to `s` and `rs`, respectively).
 
-There is a sample program available in `samples/hello.asm`. You can use it to test the undbg. To build the executable, run the following commands:
+There is a sample program available in `samples/hello.asm`. You can use it to test undbg. To build the executable, run the following commands:
 
     nasm -felf64 samples/hello.asm -o samples/hello.o
     ld samples/hello.o -o samples/hello
