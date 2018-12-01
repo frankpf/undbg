@@ -10,11 +10,11 @@ import (
 )
 
 func Start(input string) {
-	cmd := StartTarget(input)
-	StartDebugger(cmd.Process.Pid)
+	cmd := startTarget(input)
+	startDebugger(cmd.Process.Pid)
 }
 
-func StartDebugger(pid int) {
+func startDebugger(pid int) {
 	var ws syscall.WaitStatus
 	var icounter = 0
 
@@ -24,7 +24,7 @@ func StartDebugger(pid int) {
 	var cmd string
 	for ws.Stopped() {
 		cmd = utils.ReadLine("> ")
-		fn := ParseCommand(cmd, pid)
+		fn := parseCommand(cmd, pid)
 		if (fn == nil) {
 			fmt.Println("Invalid command \"" + cmd + "\"")
 		} else {
@@ -36,7 +36,7 @@ func StartDebugger(pid int) {
 	fmt.Printf("Instructions = %d\n", icounter)
 }
 
-func StartTarget(name string) *exec.Cmd {
+func startTarget(name string) *exec.Cmd {
 	log.Println("Starting target " + name)
 
 	cmd := exec.Command(name)

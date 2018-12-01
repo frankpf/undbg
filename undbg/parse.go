@@ -6,9 +6,9 @@ import (
 	"fmt"
 )
 
-func ParseCommand(cmd string, pid int) StepFunc {
+func parseCommand(cmd string, pid int) stepFunc {
 	if (cmd == "step" || cmd == "s") {
-		return Step(1)
+		return step(1)
 	} else if (strings.HasPrefix(cmd, "step ") || strings.HasPrefix(cmd, "s ")) {
 		countStr := strings.Split(cmd, " ")[1]
 		count, err := strconv.Atoi(countStr)
@@ -17,9 +17,9 @@ func ParseCommand(cmd string, pid int) StepFunc {
 			return nil
 		}
 
-		return Step(count)
+		return step(count)
 	} else if (cmd == "rev-step" || cmd == "rs") {
-		return RevStep(1)
+		return revStep(1)
 	} else {
 		return nil
 	}

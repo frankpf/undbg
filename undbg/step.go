@@ -6,9 +6,16 @@ import (
 	"fmt"
 )
 
-type StepFunc func (int, *syscall.WaitStatus) int
+type stepFunc func (int, *syscall.WaitStatus) int
 
-func RevStep(n int) StepFunc {
+func stepOnce(pid int, ws *syscall.WaitStatus) {
+	if err := syscall.PtraceSingleStep(pid); err != nil {
+		log.Fatal(err)
+	}
+	syscall.Wait4(pid, ws, syscall.WALL, nil)
+}
+
+func revStep(n int) stepFunc {
 	if (n != 1) {
 		log.Fatal("RevStep is not implemented for multiple instructions!")
 		return nil
@@ -20,11 +27,11 @@ func RevStep(n int) StepFunc {
 	}
 }
 
-func Step(n int) StepFunc {
+func step(n int) stepFunc {
 	return func(pid int, ws *syscall.WaitStatus) int {
 		var i = 0
 		for ; i < n; i++ {
-			StepOnce(pid, ws)
+			stepOnce(pid, ws)
 		}
 
 		var msg = "Stepped %d instruction"
@@ -39,9 +46,3 @@ func Step(n int) StepFunc {
 	}
 }
 
-func StepOnce(pid int, ws *syscall.WaitStatus) {
-	if err := syscall.PtraceSingleStep(pid); err != nil {
-		log.Fatal(err)
-	}
-	syscall.Wait4(pid, ws, syscall.WALL, nil)
-}
