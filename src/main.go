@@ -37,9 +37,9 @@ type StepFunc func (int, *syscall.WaitStatus) int
 
 
 func ParseCommand(cmd string, pid int) StepFunc {
-	if (cmd == "step") {
+	if (cmd == "step" || cmd == "s") {
 		return Step(1)
-	} else if (strings.HasPrefix(cmd, "step ")) {
+	} else if (strings.HasPrefix(cmd, "step ") || strings.HasPrefix(cmd, "s ")) {
 		countStr := strings.Split(cmd, " ")[1]
 		count, err := strconv.Atoi(countStr)
 		if (err != nil) {
@@ -48,7 +48,7 @@ func ParseCommand(cmd string, pid int) StepFunc {
 		}
 
 		return Step(count)
-	} else if (cmd == "rev-step") {
+	} else if (cmd == "rev-step" || cmd == "rs") {
 		return RevStep(1)
 	} else {
 		return nil
