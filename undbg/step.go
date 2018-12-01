@@ -7,7 +7,10 @@ import (
 	"syscall"
 )
 
-type stepFunc func(int, *syscall.WaitStatus) int
+func (dbg *undbg) printRegs() {
+	regs := dbg.getCurrentRegs()
+	fmt.Printf("%+v\n", regs)
+}
 
 func (dbg *undbg) getCurrentRegs() syscall.PtraceRegs {
 	var regs = syscall.PtraceRegs{}
