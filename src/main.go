@@ -93,11 +93,7 @@ func Step(n int) StepFunc {
 	return func(pid int, ws *syscall.WaitStatus) int {
 		var i = 0
 		for ; i < n; i++ {
-			if err := syscall.PtraceSingleStep(pid); err != nil {
-				fmt.Printf("error while stepping %d\n", i)
-				log.Fatal(err)
-			}
-			syscall.Wait4(pid, ws, syscall.WALL, nil)
+			StepOnce(pid, ws)
 		}
 
 		var msg = "Stepped %d instruction"
@@ -112,8 +108,11 @@ func Step(n int) StepFunc {
 	}
 }
 
-func StepOnce(pid int, ws *syscall.WaitStatus) Pid {
-	return Step(1)(pid, ws)
+func StepOnce(pid int, ws *syscall.WaitStatus) {
+	if err := syscall.PtraceSingleStep(pid); err != nil {
+		log.Fatal(err)
+	}
+	syscall.Wait4(pid, ws, syscall.WALL, nil)
 }
 
 func main() {
