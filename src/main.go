@@ -33,8 +33,7 @@ func StartTarget(name string) *exec.Cmd {
 	return cmd
 }
 
-type Pid = int
-type StepFunc func (int, *syscall.WaitStatus) Pid
+type StepFunc func (int, *syscall.WaitStatus) int
 
 
 func ParseCommand(cmd string, pid int) StepFunc {
@@ -84,14 +83,14 @@ func RevStep(n int) StepFunc {
 		return nil
 	}
 
-	return func(pid int, ws *syscall.WaitStatus) Pid {
-		log.Fatal("RevStep is not implemented!")
-		return n
+	return func(pid int, ws *syscall.WaitStatus) int {
+		fmt.Printf("RevStep is not implemented!\n")
+		return 0
 	}
 }
 
 func Step(n int) StepFunc {
-	return func(pid int, ws *syscall.WaitStatus) Pid {
+	return func(pid int, ws *syscall.WaitStatus) int {
 		var i = 0
 		for ; i < n; i++ {
 			if err := syscall.PtraceSingleStep(pid); err != nil {
