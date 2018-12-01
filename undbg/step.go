@@ -1,22 +1,52 @@
 package undbg
 
 import (
-	"log"
-	"syscall"
 	"fmt"
 	"golang.org/x/arch/x86/x86asm"
+	"log"
+	"syscall"
 )
 
-type stepFunc func (int, *syscall.WaitStatus) int
+type stepFunc func(int, *syscall.WaitStatus) int
+
+func (dbg *undbg) getCurrentRegs() syscall.PtraceRegs {
+	var regs = syscall.PtraceRegs{}
+	err := syscall.PtraceGetRegs(dbg.pid, &regs)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return regs
+}
+
+func createStateSnapshot(regs syscall.PtraceRegs, memWrite bool, memDst uintptr, memValue uint64) state {
+	s := state{
+		regs:     regs,
+		memWrite: memWrite,
+		memDst:   memDst,
+		memValue: memValue,
+	}
+
+	return s
+}
 
 // FIXME: This is really hacky. We probably should be using
 // structs and methods to manage access to the program state.
 var globalState []syscall.PtraceRegs
 var currentReg = 0
 
-func printCurrentInstruction(pid int, pc uint64) {
+func (dbg *undbg) pc() uintptr {
+	currentState := dbg.state()
+	return uintptr(currentState.regs.Rip)
+}
+
+func (dbg *undbg) state() state {
+	currentState := dbg.states[dbg.idx]
+	return currentState
+}
+
+func (dbg *undbg) printCurrentInstruction() {
 	text := make([]byte, 15)
-	_, err := syscall.PtracePeekText(pid, uintptr(pc), text)
+	_, err := syscall.PtracePeekText(dbg.pid, dbg.pc(), text)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,51 +55,37 @@ func printCurrentInstruction(pid int, pc uint64) {
 	fmt.Println("Inst " + x86asm.IntelSyntax(inst, 0, nil))
 }
 
-func stepOnce(pid int, ws *syscall.WaitStatus) {
-
-	var regs = syscall.PtraceRegs{}
-	err := syscall.PtraceGetRegs(pid, &regs)
+func (dbg *undbg) stepOnce() {
+	err := syscall.PtraceSingleStep(dbg.pid)
 	if err != nil {
 		log.Fatal(err)
 	}
-	printCurrentInstruction(pid, regs.Rip)
+	dbg.icounter++
+	dbg.wait()
 
-	currentReg++
-	if currentReg > len(globalState) {
-		globalState = append(globalState, regs)
+	regs := dbg.getCurrentRegs()
+	dbg.idx++
+	if dbg.idx == len(dbg.states) {
+		snapshot := createStateSnapshot(regs, false, 0, 0)
+		dbg.states = append(dbg.states, snapshot)
 	}
-
-
-	err = syscall.PtraceSingleStep(pid)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-
-	syscall.Wait4(pid, ws, syscall.WALL, nil)
 }
 
-func revStep(n int) stepFunc {
-	if (n != 1) {
+func (dbg *undbg) revStep(n int) int {
+	if n != 1 {
 		log.Fatal("RevStep is not implemented for multiple instructions!")
-		return nil
 	}
 
-	return func(pid int, ws *syscall.WaitStatus) int {
-		currentReg--
-		syscall.PtraceSetRegs(pid, &globalState[currentReg])
-		return 1
-	}
+	dbg.idx--
+	currentState := dbg.state()
+	syscall.PtraceSetRegs(dbg.pid, &currentState.regs)
+	return 1
 }
 
-func step(n int) stepFunc {
-	return func(pid int, ws *syscall.WaitStatus) int {
-		var i = 0
-		for ; i < n; i++ {
-			stepOnce(pid, ws)
-		}
-
-		return i
+func (dbg *undbg) step(n int) int {
+	var i = 0
+	for ; i < n; i++ {
+		dbg.stepOnce()
 	}
+	return i
 }
-

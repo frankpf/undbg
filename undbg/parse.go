@@ -1,26 +1,28 @@
 package undbg
 
 import (
-	"strings"
-	"strconv"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
-func parseCommand(cmd string, pid int) stepFunc {
-	if (cmd == "step" || cmd == "s") {
-		return step(1)
-	} else if (strings.HasPrefix(cmd, "step ") || strings.HasPrefix(cmd, "s ")) {
+func (dbg *undbg) runCommand(cmd string) {
+	if cmd == "step" || cmd == "s" {
+		dbg.step(1)
+	} else if strings.HasPrefix(cmd, "step ") || strings.HasPrefix(cmd, "s ") {
 		countStr := strings.Split(cmd, " ")[1]
 		count, err := strconv.Atoi(countStr)
-		if (err != nil) {
+		if err != nil {
 			fmt.Println(countStr + " is not a valid argument to step")
-			return nil
+		} else {
+			dbg.step(count)
 		}
-
-		return step(count)
-	} else if (cmd == "rev-step" || cmd == "rs") {
-		return revStep(1)
+	} else if cmd == "rev-step" || cmd == "rs" {
+		dbg.revStep(1)
+	} else if cmd == "print" || cmd == "p" {
+		dbg.printCurrentInstruction()
 	} else {
-		return nil
+		fmt.Println("Invalid command \"" + cmd + "\"")
 	}
+
 }

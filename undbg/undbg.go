@@ -1,52 +1,83 @@
 package undbg
 
 import (
-	"os"
-	"os/exec"
-	"syscall"
 	"fmt"
 	"github.com/frankpf/undbg/utils"
 	"log"
+	"os"
+	"os/exec"
+	"syscall"
 )
+
+type state struct {
+	regs     syscall.PtraceRegs
+	memWrite bool
+	memDst   uintptr
+	memValue uint64
+}
+
+type undbg struct {
+	pid      int
+	ws       syscall.WaitStatus
+	states   []state
+	idx      int
+	icounter int
+}
 
 func Start(input string) {
 	cmd := startTarget(input)
 	startDebugger(cmd.Process.Pid)
 }
 
-func startDebugger(pid int) {
-	var ws syscall.WaitStatus
-	var icounter = 0
-
-	/* Wait for target to stop on its first instruction */
-	syscall.Wait4(pid, &ws, syscall.WALL, nil)
-
-	var cmd string
-	for ws.Stopped() {
-		cmd = utils.ReadLine("> ")
-		fn := parseCommand(cmd, pid)
-		if (fn == nil) {
-			fmt.Println("Invalid command \"" + cmd + "\"")
-		} else {
-			stepped := fn(pid, &ws)
-			icounter += stepped
-		}
+func newDebugger(pid int) *undbg {
+	dbg := &undbg{
+		pid:      pid,
+		ws:       0,
+		states:   make([]state, 0),
+		idx:      -1,
+		icounter: 0,
 	}
 
-	fmt.Printf("Total instructions executed = %d\n", icounter)
+	return dbg
+}
+
+func (dbg *undbg) wait() {
+	syscall.Wait4(dbg.pid, &dbg.ws, syscall.WALL, nil)
+}
+
+func (dbg *undbg) stopped() bool {
+	return dbg.ws.Stopped()
+}
+
+func startDebugger(pid int) {
+	dbg := newDebugger(pid)
+
+	/* Wait for target to stop on its first instruction */
+	dbg.wait()
+
+	initialState := createStateSnapshot(dbg.getCurrentRegs(), false, 0, 0)
+	dbg.states = append(dbg.states, initialState)
+	dbg.idx++
+
+	var cmd string
+	for dbg.stopped() {
+		cmd = utils.ReadLine("> ")
+		dbg.runCommand(cmd)
+	}
+
+	fmt.Printf("Total instructions executed = %d\n", dbg.icounter)
 }
 
 func startTarget(name string) *exec.Cmd {
 	log.Println("Starting target " + name)
 
-	cmd := exec.Command(name)
-	cmd.Stdout = os.Stdout
-	cmd.SysProcAttr = &syscall.SysProcAttr{Ptrace: true}
+	prog := exec.Command(name)
+	prog.Stdout = os.Stdout
+	prog.SysProcAttr = &syscall.SysProcAttr{Ptrace: true}
 
-	err := cmd.Start()
+	err := prog.Start()
 	if err != nil {
 		log.Fatal(err)
 	}
-	return cmd
+	return prog
 }
-
