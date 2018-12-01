@@ -33,7 +33,7 @@ func startDebugger(pid int) {
 		}
 	}
 
-	fmt.Printf("Instructions = %d\n", icounter)
+	fmt.Printf("Total instructions executed = %d\n", icounter)
 }
 
 func startTarget(name string) *exec.Cmd {

@@ -24,4 +24,6 @@ There is a sample program available in `samples/hello.asm`. You can use it to te
 
 Example undbg session:
 
-![example undbg session](./docs/undbg_session.png)
+![example undbg session](./docs/undbg-hello-world-session.png)
+
+As you can see, after reaching the `write` syscall instruction responsible for printing "Hello world", we reverse-step and step twice, resulting in "Hello world" being printed three times.
