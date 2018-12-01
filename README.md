@@ -8,7 +8,7 @@ For now, the only way to install is to build from source. Before installing, mak
 
     git clone https://github.com/frankpf/undbg
     cd undbg
-    go build src/main.go -o undbg
+    go build main.go -o undbg
 
 ## Usage
 
