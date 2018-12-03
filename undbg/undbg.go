@@ -13,7 +13,7 @@ type state struct {
 	regs     syscall.PtraceRegs
 	memWrite bool
 	memDst   uintptr
-	memValue uint64
+	memOldValue uint64
 }
 
 type undbg struct {

@@ -21,12 +21,13 @@ func (dbg *undbg) getCurrentRegs() syscall.PtraceRegs {
 	return regs
 }
 
-func createStateSnapshot(regs syscall.PtraceRegs, memWrite bool, memDst uintptr, memValue uint64) state {
+
+func createStateSnapshot(regs syscall.PtraceRegs, memWrite bool, memDst uintptr, memOldValue uint64) state {
 	s := state{
 		regs:     regs,
 		memWrite: memWrite,
 		memDst:   memDst,
-		memValue: memValue,
+		memOldValue: memOldValue,
 	}
 
 	return s
