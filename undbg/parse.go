@@ -4,7 +4,20 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"syscall"
+	"log"
+	"github.com/frankpf/undbg/zydis_bindings"
 )
+
+func (dbg * undbg) printBytes() {
+	text := make([]byte, 15)
+	_, err := syscall.PtracePeekText(dbg.pid, dbg.pc(), text)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	zydis_bindings.PrintBytes(text)
+}
 
 func (dbg *undbg) runCommand(cmd string) {
 	if cmd == "regs" {
@@ -35,6 +48,11 @@ func (dbg *undbg) runCommand(cmd string) {
 
 	if cmd == "print" || cmd == "p" {
 		dbg.printCurrentInstruction()
+		return
+	}
+
+	if cmd == "pb" {
+		dbg.printBytes()
 		return
 	}
 
