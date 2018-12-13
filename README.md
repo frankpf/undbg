@@ -2,14 +2,6 @@
 
 undbg is an experimental debugger with support for reverse execution.
 
-## Installing
-
-For now, the only way to install is to build from source. Before installing, make sure you have the Go toolchain configured.
-
-    git clone https://github.com/frankpf/undbg
-    cd undbg
-    go build main.go -o undbg
-
 ## Usage
 
     undbg <target program>
@@ -27,3 +19,32 @@ Example undbg session:
 ![example undbg session](./docs/undbg-hello-world-session.png)
 
 As you can see, after reaching the `write` syscall instruction responsible for printing "Hello world", we reverse-step and step twice, resulting in "Hello world" being printed three times.
+
+
+## Developing
+
+Here, we assume you already have the Go toolchain installed.
+
+First, clone the project:
+
+    git clone http://github.com/frankpf/undbg
+    cd undbg
+
+We use [musl libc](https://www.musl-libc.org/) to generate a completely static binary. Usually, Go binaries are statically linked. However, undbg depends on the excellent [Zydis](https://zydis.re/) library, which is written in C. Because of this, we need to use compile Zydis using musl to keep the final binary static.
+
+To get musl, install `musl-tools`:
+
+    sudo apt-get install -y musl-tools
+
+Then, you need to compile Zydis:
+
+    cd dependencies/zydis
+    mkdir build
+    cd build
+    env CC="musl-gcc -static -Os -fPIC" cmake -D CMAKE_POSITION_INDEPENDENT_CODE=ON ..
+    make
+
+Now, you're ready to build undbg:
+
+    cd ../..
+    env CC=$(which musl-gcc) go build -o undbg --ldflags '-linkmode external -extldflags "-static"' main.go
