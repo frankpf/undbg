@@ -5,7 +5,7 @@ package zydis_bindings
 // #cgo CFLAGS: -I ${SRCDIR}/../dependencies/zydis/build/
 // #cgo CFLAGS: -I ${SRCDIR}/../dependencies/zydis/build/dependencies/zycore/
 // #cgo LDFLAGS: ${SRCDIR}/../dependencies/zydis/build/libZydis.a
-// #include "zydis_bindings.h"
+// #include "bindings.h"
 import "C"
 
 func PrintBytes(buf []byte) {
