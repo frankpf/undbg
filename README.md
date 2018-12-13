@@ -30,7 +30,7 @@ First, clone the project recursively:
     git clone --recursive http://github.com/frankpf/undbg
     cd undbg
 
-We use [musl libc](https://www.musl-libc.org/) to generate a completely static binary. Usually, Go binaries are statically linked. However, undbg depends on the excellent [Zydis](https://zydis.re/) library, which is written in C. Because of this, we need to use compile Zydis using musl to keep the final binary static.
+We use [musl libc](https://www.musl-libc.org/) to generate a completely static binary. Usually, Go binaries are statically linked. However, undbg depends on the excellent [Zydis](https://zydis.re/) library, which is written in C. Because of this, we need to compile Zydis using musl to keep the final binary static.
 
 To get musl, install `musl-tools`:
 
@@ -46,5 +46,5 @@ Then, you need to compile Zydis:
 
 Now, you're ready to build undbg:
 
-    cd ../..
+    cd ../../..
     env CC=$(which musl-gcc) go build -o undbg --ldflags '-linkmode external -extldflags "-static"' main.go
