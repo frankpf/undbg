@@ -41,14 +41,6 @@ func newDebugger(pid int) *undbg {
 	return dbg
 }
 
-func (dbg *undbg) wait() {
-	syscall.Wait4(dbg.pid, &dbg.ws, syscall.WALL, nil)
-}
-
-func (dbg *undbg) stopped() bool {
-	return dbg.ws.Stopped()
-}
-
 func startDebugger(pid int) {
 	dbg := newDebugger(pid)
 
