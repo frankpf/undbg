@@ -25,9 +25,9 @@ As you can see, after reaching the `write` syscall instruction responsible for p
 
 Here, we assume you already have the Go toolchain installed.
 
-First, clone the project recursively:
+After cloning the project, pull the git submodules:
 
-    git clone --recursive http://github.com/frankpf/undbg
+    git submodule update --init --recursive
     cd undbg
 
 We use [musl libc](https://www.musl-libc.org/) to generate a completely static binary. Usually, Go binaries are statically linked. However, undbg depends on the excellent [Zydis](https://zydis.re/) library, which is written in C. Because of this, we need to compile Zydis using musl to keep the final binary static.
