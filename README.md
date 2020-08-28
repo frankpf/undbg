@@ -32,9 +32,11 @@ After cloning the project, pull the git submodules:
 
 We use [musl libc](https://www.musl-libc.org/) to generate a completely static binary. Usually, Go binaries are statically linked. However, undbg depends on the excellent [Zydis](https://zydis.re/) library, which is written in C. Because of this, we need to compile Zydis using musl to keep the final binary static.
 
-To get musl, install `musl-tools`:
+You're going to need the `musl-gcc` binary available in PATH. To get it on Ubuntu, install the `musl-tools` package:
 
     sudo apt-get install -y musl-tools
+
+For other distros, check the musl documentation.
 
 Then, you need to compile Zydis:
 
