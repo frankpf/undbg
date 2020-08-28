@@ -2,6 +2,7 @@ package undbg
 
 import (
 	"syscall"
+	"log"
 )
 
 func (dbg *undbg) step(n int) int {

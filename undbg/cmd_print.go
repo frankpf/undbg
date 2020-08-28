@@ -4,6 +4,7 @@ import (
 	"syscall"
 	"golang.org/x/arch/x86/x86asm"
 	"fmt"
+	"log"
 )
 
 func (dbg *undbg) printRegs() {
